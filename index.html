@@ -350,18 +350,54 @@
     }
     .lang-dot { width: 10px; height: 10px; border-radius: 50%; background: #f1e05a; display: inline-block; }
 
-    /* ── GitHub stats ── */
+    /* ── GitHub stats (live via API) ── */
     .gh-stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      align-items: center;
+      align-items: stretch;
     }
-    .gh-stats img {
-      width: 100%;
+    .gh-panel {
+      background: var(--card);
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      background: var(--card);
+      padding: 22px;
+    }
+    .gh-panel h3 {
+      font-size: .95rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #21262d 25%, #2d333b 50%, #21262d 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 6px;
+    }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    .live-stat { margin-bottom: 14px; }
+    .live-stat:last-child { margin-bottom: 0; }
+    .live-stat .row {
+      display: flex; justify-content: space-between;
+      font-size: .9rem; margin-bottom: 6px;
+    }
+    .live-stat .row .k { color: var(--muted); }
+    .live-stat .row .v { color: var(--accent); font-weight: 600; }
+    .bar { height: 8px; background: #30363d; border-radius: 4px; overflow: hidden; }
+    .bar > span { display: block; height: 100%; border-radius: 4px; width: 0; transition: width .8s ease; }
+
+    .lang-item { margin-bottom: 12px; }
+    .lang-item:last-child { margin-bottom: 0; }
+    .lang-item .row { display: flex; justify-content: space-between; font-size: .85rem; margin-bottom: 5px; }
+    .lang-item .row .k { color: var(--text); }
+    .lang-item .row .v { color: var(--muted); }
+    .gh-panel .empty {
+      color: var(--muted);
+      font-size: .9rem;
+      padding: 12px 0;
+      text-align: center;
     }
     @media (max-width: 700px) { .gh-stats { grid-template-columns: 1fr; } }
 
@@ -601,14 +637,26 @@
     </div>
   </section>
 
-  <!-- GitHub Stats -->
-  <section class="section reveal">
+  <!-- GitHub Stats (live via GitHub API) -->
+  <section class="section reveal" id="activity">
     <div class="section-title">📈 GitHub Activity</div>
     <div class="gh-stats">
-      <img src="https://github-readme-stats.vercel.app/api?username=edgeone42&show_icons=true&theme=github_dark&hide_border=true"
-           alt="GitHub Stats" loading="lazy" />
-      <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=edgeone42&layout=compact&theme=github_dark&hide_border=true"
-           alt="Top Languages" loading="lazy" />
+      <div class="gh-panel">
+        <h3>💪 Profile Stats</h3>
+        <div id="profileStats">
+          <div class="skeleton" style="height:60px"></div>
+          <div class="skeleton" style="height:60px;margin-top:14px"></div>
+          <div class="skeleton" style="height:60px;margin-top:14px"></div>
+        </div>
+      </div>
+      <div class="gh-panel">
+        <h3>📝 Top Languages</h3>
+        <div id="langStats">
+          <div class="skeleton" style="height:34px"></div>
+          <div class="skeleton" style="height:34px;margin-top:14px"></div>
+          <div class="skeleton" style="height:34px;margin-top:14px"></div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -747,6 +795,98 @@
   }, { threshold: 0.1 });
 
   document.querySelectorAll('.reveal').forEach((el) => observer.observe(el));
+
+  // ── Live GitHub stats via official GitHub API (no third-party dependency) ──
+  const GH_USER = 'edgeone42';
+
+  function fmtNum(n) {
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k';
+    return String(n);
+  }
+
+  async function loadGitHubStats() {
+    try {
+      const [userRes, reposRes] = await Promise.all([
+        fetch('https://api.github.com/users/' + GH_USER),
+        fetch('https://api.github.com/users/' + GH_USER + '/repos?per_page=100&sort=updated'),
+      ]);
+
+      const user = userRes.ok ? await userRes.json() : null;
+      const repos = reposRes.ok ? await reposRes.json() : [];
+
+      // --- Profile stats panel ---
+      const statsEl = document.getElementById('profileStats');
+      if (user) {
+        const totalStars = repos.reduce((s, r) => s + r.stargazers_count, 0);
+        const totalForks = repos.reduce((s, r) => s + r.forks_count, 0);
+        const items = [
+          ['Public Repos', user.public_repos],
+          ['Total Stars', totalStars],
+          ['Total Forks', totalForks],
+          ['Followers', user.followers],
+          ['Following', user.following],
+        ];
+        statsEl.innerHTML = items.map(([k, v], i) => `
+          <div class="live-stat">
+            <div class="row"><span class="k">${k}</span><span class="v">${fmtNum(v)}</span></div>
+            <div class="bar"><span style="background:var(--accent)"></span></div>
+          </div>`).join('');
+        // animate bars based on relative magnitude
+        const max = Math.max(...items.map(([, v]) => v), 1);
+        requestAnimationFrame(() => {
+          statsEl.querySelectorAll('.live-stat').forEach((el, i) => {
+            const v = items[i][1];
+            el.querySelector('.bar > span').style.width = Math.max((v / max) * 100, 4) + '%';
+          });
+        });
+      } else {
+        statsEl.innerHTML = '<div class="empty">⚠️ Failed to load stats from GitHub.</div>';
+      }
+
+      // --- Top languages panel ---
+      const langEl = document.getElementById('langStats');
+      try {
+        const langs = {};
+        let total = 0;
+        const results = await Promise.all(
+          repos.slice(0, 10).map((r) =>
+            fetch(r.languages_url).then((res) => (res.ok ? res.json() : null))
+          )
+        );
+        results.forEach((obj) => {
+          if (!obj) return;
+          Object.entries(obj).forEach(([lang, bytes]) => {
+            langs[lang] = (langs[lang] || 0) + bytes;
+            total += bytes;
+          });
+        });
+
+        if (total > 0) {
+          const colors = ['#f1e05a', '#3178c6', '#00ADD8', '#e34c26', '#89e051', '#563d7c', '#4F5D95', '#b07219'];
+          const sorted = Object.entries(langs).sort((a, b) => b[1] - a[1]).slice(0, 6);
+          langEl.innerHTML = sorted.map(([lang, bytes], i) => {
+            const pct = (bytes / total) * 100;
+            return `
+              <div class="lang-item">
+                <div class="row"><span class="k">${lang}</span><span class="v">${pct.toFixed(1)}%</span></div>
+                <div class="bar"><span style="width:${pct}%;background:${colors[i % colors.length]}"></span></div>
+              </div>`;
+          }).join('');
+        } else {
+          langEl.innerHTML = '<div class="empty">No language data available yet.</div>';
+        }
+      } catch (e) {
+        langEl.innerHTML = '<div class="empty">⚠️ Could not load language stats.</div>';
+      }
+    } catch (err) {
+      const statsEl = document.getElementById('profileStats');
+      const langEl = document.getElementById('langStats');
+      if (statsEl) statsEl.innerHTML = '<div class="empty">⚠️ Could not load GitHub stats.</div>';
+      if (langEl) langEl.innerHTML = '<div class="empty">⚠️ Could not load GitHub stats.</div>';
+    }
+  }
+
+  loadGitHubStats();
 </script>
 </body>
 </html>
