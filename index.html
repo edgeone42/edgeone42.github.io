@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Taylor Torres — Developer</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --border: #30363d;
+      --accent: #58a6ff;
+      --accent2: #3fb950;
+      --text: #e6edf3;
+      --muted: #8b949e;
+      --card: #21262d;
+      --radius: 12px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0d1117 0%, #1a1f35 50%, #0d1117 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 80px 24px 64px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(88,166,255,.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .avatar-wrap {
+      display: inline-block;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 30px rgba(88,166,255,.35);
+      object-fit: cover;
+      background: var(--card);
+    }
+    .avatar-fallback {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      border: 3px solid var(--accent);
+      box-shadow: 0 0 30px rgba(88,166,255,.35);
+      background: linear-gradient(135deg,#1f6feb,#388bfd);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 52px; font-weight: 700; color: #fff;
+    }
+    .online-dot {
+      position: absolute;
+      bottom: 6px; right: 6px;
+      width: 18px; height: 18px;
+      background: var(--accent2);
+      border-radius: 50%;
+      border: 3px solid var(--bg);
+    }
+
+    .hero h1 {
+      font-size: clamp(1.8rem, 5vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+    .hero .handle {
+      color: var(--accent);
+      font-size: 1.05rem;
+      margin-bottom: 18px;
+    }
+    .hero .tagline {
+      color: var(--muted);
+      font-size: 1rem;
+      max-width: 520px;
+      margin: 0 auto 28px;
+      line-height: 1.6;
+    }
+
+    .badge-row {
+      display: flex; flex-wrap: wrap; gap: 10px;
+      justify-content: center; margin-bottom: 28px;
+    }
+    .badge {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: .82rem;
+      color: var(--muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .badge span { color: var(--text); }
+
+    .btn-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-size: .93rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #0d1117;
+    }
+    .btn-primary:hover { background: #79c0ff; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── Layout ── */
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      flex: 1;
+    }
+
+    .section { margin-bottom: 48px; }
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* ── Stats ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      text-align: center;
+      transition: border-color .2s;
+    }
+    .stat-card:hover { border-color: var(--accent); }
+    .stat-card .num {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-card .label { color: var(--muted); font-size: .85rem; }
+
+    /* ── Project cards ── */
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .project-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      text-decoration: none;
+      color: var(--text);
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color .2s, transform .2s;
+    }
+    .project-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .project-card .proj-name {
+      font-weight: 600; font-size: 1.05rem;
+      color: var(--accent); display: flex; align-items: center; gap: 6px;
+    }
+    .project-card .proj-desc { color: var(--muted); font-size: .9rem; line-height: 1.55; }
+    .project-card .proj-footer {
+      margin-top: auto;
+      display: flex; align-items: center; gap: 14px;
+      font-size: .82rem; color: var(--muted);
+    }
+    .lang-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: #f1e05a; display: inline-block;
+    }
+
+    /* ── Tech stack ── */
+    .stack-grid {
+      display: flex; flex-wrap: wrap; gap: 10px;
+    }
+    .tag {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 14px;
+      font-size: .85rem;
+      color: var(--text);
+      transition: border-color .2s, color .2s;
+    }
+    .tag:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── About ── */
+    .about-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      line-height: 1.75;
+      color: var(--muted);
+    }
+    .about-card strong { color: var(--text); }
+
+    /* ── Contact ── */
+    .contact-row {
+      display: flex; flex-wrap: wrap; gap: 14px;
+    }
+    .contact-item {
+      display: flex; align-items: center; gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 20px;
+      text-decoration: none;
+      color: var(--text);
+      font-size: .9rem;
+      transition: border-color .2s;
+    }
+    .contact-item:hover { border-color: var(--accent); color: var(--accent); }
+    .contact-item svg { flex-shrink: 0; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      padding: 24px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: .82rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="avatar-wrap">
+    <img
+      class="avatar"
+      src="https://avatars.githubusercontent.com/u/321246834?v=4"
+      alt="Taylor Torres avatar"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+    <div class="avatar-fallback" style="display:none;">T</div>
+    <div class="online-dot"></div>
+  </div>
+  <h1>Taylor Torres</h1>
+  <div class="handle">@edgeone42</div>
+  <p class="tagline">
+    Developer building serverless &amp; edge-native tools —
+    reimagining cloud infrastructure for the next generation of the web.
+  </p>
+
+  <div class="badge-row">
+    <div class="badge">📍 <span>Walton, Nebraska, USA</span></div>
+    <div class="badge">📧 <span>edgeone@fnosmail.com</span></div>
+    <div class="badge">🗓 <span>Joined August 2026</span></div>
+  </div>
+
+  <div class="btn-row">
+    <a class="btn btn-primary" href="https://github.com/edgeone42" target="_blank">
+      <!-- github icon -->
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
+        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+        -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+        .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+        -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.67 7.67 0 012-.27c.68 0
+        1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56
+        .82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0
+        1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+      </svg>
+      View GitHub
+    </a>
+    <a class="btn btn-outline" href="mailto:edgeone@fnosmail.com">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+        <path d="M0 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H2a2 2 0 01-2-2V4zm2-1
+        a1 1 0 00-1 1v.217l7 4.2 7-4.2V4a1 1 0 00-1-1H2zm13 2.383l-6.587 3.952a1
+        1 0 01-1.073-.044L1 5.383V12a1 1 0 001 1h12a1 1 0 001-1V5.383z"/>
+      </svg>
+      Get in touch
+    </a>
+  </div>
+</section>
+
+<!-- ── MAIN ── -->
+<div class="container">
+
+  <!-- Stats -->
+  <section class="section">
+    <div class="section-title">📊 Stats</div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="num">2</div><div class="label">Public Repos</div></div>
+      <div class="stat-card"><div class="num">1</div><div class="label">Stars Earned</div></div>
+      <div class="stat-card"><div class="num">0</div><div class="label">Followers</div></div>
+      <div class="stat-card"><div class="num">0</div><div class="label">Following</div></div>
+    </div>
+  </section>
+
+  <!-- Projects -->
+  <section class="section">
+    <div class="section-title">🚀 Featured Projects</div>
+    <div class="project-grid">
+
+      <a class="project-card" href="https://github.com/edgeone42/openlistnext" target="_blank">
+        <div class="proj-name">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M2 2.5A2.5 2.5 0 014.5 0h8.75a.75.75 0 01.75.75v12.5
+            a.75.75 0 01-.75.75h-2.5a.75.75 0 110-1.5h1.75v-2h-8a1 1 0 00-.714
+            1.7.75.75 0 01-1.072 1.05A2.495 2.495 0 012 11.5v-9zm10.5-1V9h-8c
+            -.356 0-.694.074-1 .208V2.5a1 1 0 011-1h8z"/>
+          </svg>
+          openlistnext
+        </div>
+        <div class="proj-desc">
+          利用 JS/TS 对 Go 语言内核进行重构，使其支持部署在 Serverless 环境下 — 
+          bringing list/storage tooling to edge runtimes.
+        </div>
+        <div class="proj-footer">
+          <span><span class="lang-dot" style="background:#f1e05a;"></span> JavaScript / TypeScript</span>
+          <span>⭐ 1</span>
+        </div>
+      </a>
+
+      <a class="project-card" href="https://github.com/edgeone42/cloud-mail" target="_blank">
+        <div class="proj-name">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M0 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H2a2 2 0 01-2-2V4zm2-1
+            a1 1 0 00-1 1v.217l7 4.2 7-4.2V4a1 1 0 00-1-1H2zm13 2.383l-6.587 3.952a1
+            1 0 01-1.073-.044L1 5.383V12a1 1 0 001 1h12a1 1 0 001-1V5.383z"/>
+          </svg>
+          cloud-mail
+        </div>
+        <div class="proj-desc">
+          A Cloudflare-based email service — 基于 Cloudflare 的邮箱服务.
+          S3-compatible storage routing &amp; attachment handling.
+        </div>
+        <div class="proj-footer">
+          <span><span class="lang-dot" style="background:#f1e05a;"></span> JavaScript</span>
+          <span>🔱 Fork</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Tech Stack -->
+  <section class="section">
+    <div class="section-title">🛠 Tech Stack</div>
+    <div class="stack-grid">
+      <div class="tag">JavaScript</div>
+      <div class="tag">TypeScript</div>
+      <div class="tag">Go</div>
+      <div class="tag">Cloudflare Workers</div>
+      <div class="tag">Serverless</div>
+      <div class="tag">Edge Computing</div>
+      <div class="tag">S3 / R2</div>
+      <div class="tag">Hono</div>
+      <div class="tag">GitHub Actions</div>
+      <div class="tag">Node.js</div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section class="section">
+    <div class="section-title">👤 About Me</div>
+    <div class="about-card">
+      Hi, I'm <strong>Taylor Torres</strong> — a developer based in <strong>Walton, Nebraska, USA</strong>.
+      I'm passionate about <strong>serverless architectures</strong> and <strong>edge computing</strong>,
+      with a particular focus on making powerful backend tooling accessible on constrained, 
+      distributed runtimes.
+      <br/><br/>
+      My recent work includes <strong>openlistnext</strong>, a project that ports Go-based file-listing 
+      infrastructure to JS/TS so it can run natively on platforms like Cloudflare Workers — 
+      no traditional server required. I also contribute to open-source cloud email infrastructure 
+      built on Cloudflare's ecosystem.
+      <br/><br/>
+      Always exploring the boundary between what's <em>possible</em> and what's <em>practical</em>
+      at the edge.
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section class="section">
+    <div class="section-title">📬 Contact</div>
+    <div class="contact-row">
+      <a class="contact-item" href="https://github.com/edgeone42" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0C3.58 0 0 3.58 0 8a8 8 0 005.47 7.59c.4.07.55-.17.55-.38
+          0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13
+          -.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66
+          .07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+          -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.67 7.67 0 012-.27c.68 0
+          1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56
+          .82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0
+          1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/>
+        </svg>
+        github.com/edgeone42
+      </a>
+      <a class="contact-item" href="mailto:edgeone@fnosmail.com">
+        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M0 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H2a2 2 0 01-2-2V4zm2-1
+          a1 1 0 00-1 1v.217l7 4.2 7-4.2V4a1 1 0 00-1-1H2zm13 2.383l-6.587 3.952a1
+          1 0 01-1.073-.044L1 5.383V12a1 1 0 001 1h12a1 1 0 001-1V5.383z"/>
+        </svg>
+        edgeone@fnosmail.com
+      </a>
+    </div>
+  </section>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  Built with ❤️ and deployed on <a href="https://pages.github.com" target="_blank">GitHub Pages</a>
+  &nbsp;·&nbsp;
+  <a href="https://github.com/edgeone42" target="_blank">@edgeone42</a>
+</footer>
+
+</body>
+</html>
